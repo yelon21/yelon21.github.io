@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Yelon's Blog]]></title>
+  <link href="http://yelon21.github.io/atom.xml" rel="self"/>
+  <link href="http://yelon21.github.io/"/>
+  <updated>2015-10-27T20:30:09+08:00</updated>
+  <id>http://yelon21.github.io/</id>
+  <author>
+    <name><![CDATA[Yelon]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Yelon's First Blog]]></title>
+    <link href="http://yelon21.github.io/blog/2015/10/27/yelons-first-blog/"/>
+    <updated>2015-10-27T15:31:47+08:00</updated>
+    <id>http://yelon21.github.io/blog/2015/10/27/yelons-first-blog</id>
+    <content type="html"><![CDATA[<h1>iOS上的图形和动画处理</h1>
+
+<h2>1.    绘制字符串</h2>
+
+<pre><code>
+    UIFont *font = [UIFont systemFontOfSize:10.0];
+    UIColor *color = [UIColor redColor];
+    [color set];
+    [@"112233" drawAtPoint:CGPointMake(0.0, 20.0)
+            withAttributes:@{NSFontAttributeName:font,
+                             NSForegroundColorAttributeName:[UIColor whiteColor],
+                             NSBackgroundColorAttributeName:[UIColor blueColor]}];
+    </code></pre>
+
+
+<h2>2.    颜色</h2>
+
+<pre><code>
+        CGColorRef colorRef = [UIColor blackColor].CGColor;
+    
+    const CGFloat *components = CGColorGetComponents(colorRef);
+    
+    NSUInteger componentsCount = CGColorGetNumberOfComponents(colorRef);
+    
+    for (NSUInteger i = 0; i < componentsCount; i++) {
+        
+        NSLog(@"%@=%@",@(i),@(components[i]));
+    }
+</code></pre>
+
+
+
+]]></content>
+  </entry>
+  
+</feed>
