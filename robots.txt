@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: 
-
-Sitemap: http://yelon21.github.io/sitemap.xml 
