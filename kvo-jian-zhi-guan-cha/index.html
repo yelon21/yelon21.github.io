@@ -1,0 +1,467 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KVO 键值观察 | yelon&#39;s blog</title>
+<link rel="shortcut icon" href="/favicon.ico?v=1653190068996">
+<link href="/styles/remixicon.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="KVO 键值观察 | yelon&#39;s blog - Atom Feed" href="/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+KVO - 键值观察
+
+基础介绍
+
+注册、移除注册、接收通知
+
+NSObject(NSKeyValueObserverRegistration)
+NSArray(NSKeyValueObserverRegistration)
+NSKeyV..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="/">
+  <img class="avatar" src="/images/avatar.png?v=1653190068996" alt="">
+  </a>
+  <h1 class="site-title">
+    yelon&#39;s blog
+  </h1>
+  <p class="site-description">
+    coder
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              KVO 键值观察
+            </h2>
+            <div class="post-info">
+              <span>
+                2014-02-02
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p><ul class="markdownIt-TOC">
+<li><a href="#kvo-%E9%94%AE%E5%80%BC%E8%A7%82%E5%AF%9F">KVO - 键值观察</a>
+<ul>
+<li><a href="#%E5%9F%BA%E7%A1%80%E4%BB%8B%E7%BB%8D">基础介绍</a>
+<ul>
+<li><a href="#%E6%B3%A8%E5%86%8C-%E7%A7%BB%E9%99%A4%E6%B3%A8%E5%86%8C-%E6%8E%A5%E6%94%B6%E9%80%9A%E7%9F%A5">注册、移除注册、接收通知</a>
+<ul>
+<li><a href="#nsobjectnskeyvalueobserverregistration">NSObject(NSKeyValueObserverRegistration)</a></li>
+<li><a href="#nsarraynskeyvalueobserverregistration">NSArray(NSKeyValueObserverRegistration)</a></li>
+<li><a href="#nskeyvalueobservingoptions">NSKeyValueObservingOptions</a></li>
+<li><a href="#nskeyvaluechange">NSKeyValueChange</a></li>
+<li><a href="#nskeyvaluesetmutationkind">NSKeyValueSetMutationKind</a></li>
+<li><a href="#nskeyvaluechangekey">NSKeyValueChangeKey</a></li>
+<li><a href="#nsobjectnskeyvalueobservernotification">NSObject(NSKeyValueObserverNotification)</a></li>
+</ul>
+</li>
+<li><a href="#%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5-%E6%89%8B%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">自动更改通知 &amp; 手动更改通知</a>
+<ul>
+<li><a href="#%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">自动更改通知</a></li>
+<li><a href="#%E6%89%8B%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">手动更改通知</a>
+<ul>
+<li><a href="#%E5%A6%82%E6%9E%9C%E5%8D%95%E4%B8%AA%E6%93%8D%E4%BD%9C%E5%AF%BC%E8%87%B4%E5%A4%9A%E4%B8%AA%E9%94%AE%E5%8F%91%E7%94%9F%E6%9B%B4%E6%94%B9%E5%88%99%E5%BF%85%E9%A1%BB%E5%B5%8C%E5%A5%97%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">如果单个操作导致多个键发生更改，则必须嵌套更改通知</a></li>
+<li><a href="#%E6%9C%89%E5%BA%8F%E4%B8%94%E5%AF%B9%E5%A4%9A%E5%85%B3%E7%B3%BB">有序且对多关系</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%85%B3%E8%81%94%E5%B1%9E%E6%80%A7">关联属性</a>
+<ul>
+<li><a href="#%E4%B8%80%E5%AF%B9%E4%B8%80%E5%85%B3%E7%B3%BB">一对一关系</a></li>
+<li><a href="#%E5%AF%B9%E5%A4%9A%E5%85%B3%E7%B3%BB">对多关系</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="kvo-键值观察">KVO - 键值观察</h1>
+<p><strong><code>KVO</code></strong>（<code>Key-Value Observing</code>）是一种允许将其他对象的特定属性的变更通知到观察对象的机制。想要理解<code>KVO</code>，最好先了解下<a href="/post/nskeyvaluecoding/#nskeyvalueoperator"><strong>KVC（key-value coding）</strong></a>。</p>
+<h2 id="基础介绍">基础介绍</h2>
+<h3 id="注册-移除注册-接收通知">注册、移除注册、接收通知</h3>
+<h4 id="nsobjectnskeyvalueobserverregistration">NSObject(NSKeyValueObserverRegistration)</h4>
+<p>一般而言，通过下面的方法进行添加注册、移除注册和接收通知。</p>
+<pre><code>添加注册
+该方法不会对观察对象、被观察对象和context保持强引用；
+- (void)addObserver:(NSObject *)observer 
+		  forKeyPath:(NSString *)keyPath 
+		     options:(NSKeyValueObservingOptions)options 
+		     context:(nullable void *)context;
+移除注册
+- (void)removeObserver:(NSObject *)observer 
+			  forKeyPath:(NSString *)keyPath 
+			  	  context:(nullable void *)context;
+- (void)removeObserver:(NSObject *)observer 
+			  forKeyPath:(NSString *)keyPath;
+
+应该尽可能使用 -removeObserver:forKeyPath:context: 
+而不是 -removeObserver:forKeyPath: ，因为它可以让您更准确地指定您的意图。
+
+通知
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath 
+						  ofObject:(nullable id)object 
+						    change:(nullable NSDictionary&lt;NSKeyValueChangeKey, id&gt; *)change 
+						    context:(nullable void *)context;
+</code></pre>
+<blockquote>
+<p><strong>注意</strong>：<code>NSArray</code>、<code>NSOrderedSet</code>、<code>NSSet</code>都是不可以作为被观察对象的。调用以上方法将导致程序抛出异常。</p>
+</blockquote>
+<h4 id="nsarraynskeyvalueobserverregistration">NSArray(NSKeyValueObserverRegistration)</h4>
+<p>对于<code>NSArray</code>虽然不能直接作为被观察对象，以观察者的身份注册或注销与数组中每个索引元素相关的键路径上的值。这种方式可能比元素对对象反复调用<code>NSObject(NSKeyValueObserverRegistration)</code>方法快得多。</p>
+<pre><code>添加注册
+- (void)addObserver:(NSObject *)observer 
+ toObjectsAtIndexes:(NSIndexSet *)indexes 
+ 		  forKeyPath:(NSString *)keyPath 
+ 		     options:(NSKeyValueObservingOptions)options 
+ 		     context:(nullable void *)context;
+移除注册
+- (void)removeObserver:(NSObject *)observer 
+  fromObjectsAtIndexes:(NSIndexSet *)indexes 
+            forKeyPath:(NSString *)keyPath 
+               context:(nullable void *)context;
+- (void)removeObserver:(NSObject *)observer 
+  fromObjectsAtIndexes:(NSIndexSet *)indexes 
+  			  forKeyPath:(NSString *)keyPath;
+</code></pre>
+<h4 id="nskeyvalueobservingoptions">NSKeyValueObservingOptions</h4>
+<p>通过添加注册的选项<code>NSKeyValueObservingOptions</code>来订制通知变更中的内容。</p>
+<pre><code>typedef NS_OPTIONS(NSUInteger, NSKeyValueObservingOptions) {
+
+    NSKeyValueObservingOptionNew = 0x01, // 新值
+    NSKeyValueObservingOptionOld = 0x02, // 旧值
+    NSKeyValueObservingOptionInitial, // 注册代码返回前发送通知
+    /*
+    变更前：包含NSKeyValueChangeNotificationIsPriorKey:@YES，不包含NSKeyValueObservingOptionNew。
+    	由set&lt;Key&gt;中值变更前-willChange…触发。
+    更改后：发送的通知中的更改字典包含与未指定此选项时相同。
+    	
+	但由NSOrderedSets表示的有序唯一对多关系除外。对于这些，对于NSKeyValueChangeInsertion和NSKeyValueChangeReplacement变化，
+	will-change通知的更改字典包含一个NSKeyValueChangeIndexesKey(在替换的情况下且指定了NSKeyValueObservingOptionOld时，包含NSKeyValueChangeOldKey)，它给出了可能被操作更改的索引(和对象)。更改之后的第二个通知包含了报告实际更改的内容的条目。对于NSKeyValueChangeRemoval更改，通过索引可以精确地删除。
+    */
+    NSKeyValueObservingOptionPrior // 属性在更改之前和之后分别发送通知
+ 
+};
+</code></pre>
+<h4 id="nskeyvaluechange">NSKeyValueChange</h4>
+<pre><code>typedef NS_ENUM(NSUInteger, NSKeyValueChange) {
+	/*
+	表示被观察对象收到-setValue:forKey:消息，或者其他符合KVC的set方法被调用。再或者 -willChangeValueForKey:/-didChangeValueForKey: 方法对被调用。
+	*/
+    NSKeyValueChangeSetting = 1, // 设置
+    
+    NSKeyValueChangeInsertion = 2, // 插入
+    NSKeyValueChangeRemoval = 3, // 移除
+    NSKeyValueChangeReplacement = 4, // 替换
+  
+    对于有序集合
+    -mutableArrayValueForKey: 
+    -mutableOrderedSetValueForKey: 
+    -willChange:valuesAtIndexes:forKey:/-didChange:valuesAtIndexes:forKey:
+    无序集合
+    -mutableSetValueForKey:
+	-willChangeValueForKey:withSetMutation:usingObjects:/-didChangeValueForKey:withSetMutation:usingObjects: 
+};
+</code></pre>
+<h4 id="nskeyvaluesetmutationkind">NSKeyValueSetMutationKind</h4>
+<p>集合属性的事件类型</p>
+<pre><code>typedef NS_ENUM(NSUInteger, NSKeyValueSetMutationKind) {
+    NSKeyValueUnionSetMutation = 1, // 对应 NSKeyValueChangeInsertion:[NSMutableSet unionSet:]
+    NSKeyValueMinusSetMutation = 2, // 对应 NSKeyValueChangeRemoval:[NSMutableSet minusSet:]
+    NSKeyValueIntersectSetMutation = 3, // 对应 NSKeyValueChangeRemoval:[NSMutableSet intersectSet:]
+    NSKeyValueSetSetMutation = 4 // 对应 NSKeyValueChangeReplacement:[NSMutableSet setSet:]
+};
+</code></pre>
+<h4 id="nskeyvaluechangekey">NSKeyValueChangeKey</h4>
+<p>change 字典中的key值</p>
+<pre><code>FOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeKindKey; //@&quot;kind&quot;
+FOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeNewKey; //@&quot;new&quot;
+FOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeOldKey; //@&quot;old&quot;
+FOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeIndexesKey; //@&quot;indexes&quot;
+FOUNDATION_EXPORT NSKeyValueChangeKey const NSKeyValueChangeNotificationIsPriorKey //@&quot;notificationIsPrior&quot;
+</code></pre>
+<h4 id="nsobjectnskeyvalueobservernotification">NSObject(NSKeyValueObserverNotification)</h4>
+<pre><code>- (void)willChangeValueForKey:(NSString *)key;
+- (void)didChangeValueForKey:(NSString *)key;
+
+- (void)willChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key;
+- (void)didChange:(NSKeyValueChange)changeKind valuesAtIndexes:(NSIndexSet *)indexes forKey:(NSString *)key;
+
+- (void)willChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects;
+- (void)didChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)mutationKind usingObjects:(NSSet *)objects;
+</code></pre>
+<h3 id="自动更改通知-手动更改通知">自动更改通知 &amp; 手动更改通知</h3>
+<p>你可以通过实现类方法<code>automaticallyNotifiesObserversForKey:</code>来控制你子类属性是否可以自动通知。</p>
+<h4 id="自动更改通知">自动更改通知</h4>
+<p>自动键值观察是使用一种称为<code>isa-swizzling</code>的技术实现的。<br>
+<code>isa</code>指针，顾名思义，指向维护调度表的对象的类。这个分派表实际上包含指向类实现的方法和其他数据的指针。<br>
+当观察者被一个对象的属性注册时，被观察对象的<code>isa</code>指针就被修改为指向一个中间类，而不是真正的类。因此，<code>isa</code>指针的值不一定反映实例的实际类。因此永远不要依赖<code>isa</code>指针来确定类成员。相反，您应该使用类方法来确定对象实例的类。</p>
+<h4 id="手动更改通知">手动更改通知</h4>
+<p>可以通过<code>+ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)theKey</code>返回<code>NO</code>去除自动通知。</p>
+<p>为了实现手动的观察者通知，在值改变之前调用<code>willChangeValueForKey:</code>，在值改变之后调用<code>didChangeValueForKey:</code></p>
+<pre><code>- (void)setBalance:(double)theBalance {
+    [self willChangeValueForKey:@&quot;balance&quot;];
+    _balance = theBalance;
+    [self didChangeValueForKey:@&quot;balance&quot;];
+}
+</code></pre>
+<h5 id="如果单个操作导致多个键发生更改则必须嵌套更改通知">如果单个操作导致多个键发生更改，则必须嵌套更改通知</h5>
+<pre><code>- (void)setBalance:(double)theBalance {
+    [self willChangeValueForKey:@&quot;balance&quot;];
+    [self willChangeValueForKey:@&quot;itemChanged&quot;];
+    _balance = theBalance;
+    _itemChanged = _itemChanged+1;
+    [self didChangeValueForKey:@&quot;itemChanged&quot;];
+    [self didChangeValueForKey:@&quot;balance&quot;];
+}
+</code></pre>
+<h5 id="有序且对多关系">有序且对多关系</h5>
+<p>在有序且对多关系的情况下，不仅必须指定更改的键，还必须指定更改的类型和涉及的对象的索引。变化的类型是<code>NSKeyValueChange</code>，指定<code>NSKeyValueChangeInsertion</code>、<code>NSKeyValueChangeRemoval</code>或<code>NSKeyValueChangeReplacement</code>。受影响对象的索引作为<code>NSIndexSet</code>对象传递。</p>
+<pre><code>- (void)removeTransactionsAtIndexes:(NSIndexSet *)indexes {
+    
+    [self willChange:NSKeyValueChangeRemoval
+        valuesAtIndexes:indexes forKey:@&quot;transactions&quot;];
+ 
+    // Remove the transaction objects at the specified indexes.
+ 
+    [self didChange:NSKeyValueChangeRemoval
+        valuesAtIndexes:indexes forKey:@&quot;transactions&quot;];
+}
+</code></pre>
+<h3 id="关联属性">关联属性</h3>
+<p>在许多情况下，一个属性的值依赖于另一个对象中的一个或多个其他属性的值。如果一个属性的值发生更改，则派生属性的值也应标记为更改。所以应确保根据关联属性的关系基数为这些依赖属性发布键值观察的通知。</p>
+<h4 id="一对一关系">一对一关系</h4>
+<p>要为一对一关系的属性值变更自动触发通知，应该覆盖<code>keyPathsForValuesAffectingValueForKey:</code>或实现一个合适的方法，遵循它定义的用于注册依赖键的模式。</p>
+<p>例如，一个人的全名取决于他的姓和名。返回全名的方法可以这样写:</p>
+<pre><code>- (NSString *)fullName {
+    return [NSString stringWithFormat:@&quot;%@ %@&quot;,firstName, lastName];
+}
+</code></pre>
+<p>在观察<code>fullName</code>情况下，所以当<code>firstName</code>或<code>lastName</code>属性更改时，必须通知观察者<code>fullName</code>属性值变更了。</p>
+<ul>
+<li>解决方案一：</li>
+</ul>
+<p>覆盖<code>keyPathsForValuesAffectingValueForKey:</code>指定一个人的<code>fullName</code>属性依赖于<code>lastName</code>和<code>firstName</code>属性。</p>
+<pre><code>+ (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
+ 
+    NSSet *keyPaths = [super keyPathsForValuesAffectingValueForKey:key];
+ 
+    if ([key isEqualToString:@&quot;fullName&quot;]) {
+        NSArray *affectingKeys = @[@&quot;lastName&quot;, @&quot;firstName&quot;];
+        keyPaths = [keyPaths setByAddingObjectsFromArray:affectingKeys];
+    }
+    return keyPaths;
+}
+</code></pre>
+<ul>
+<li>解决方案二：<br>
+可以通过实现遵循命名约定<code>keyPathsForValuesAffecting&lt;Key&gt;</code>的类方法来实现相同的结果。其中<code>&lt;Key&gt;</code>是依赖于其他值的属性的名称(首字母大写)。</li>
+</ul>
+<pre><code>+ (NSSet *)keyPathsForValuesAffectingFullName {
+    return [NSSet setWithObjects:@&quot;lastName&quot;, @&quot;firstName&quot;, nil];
+}
+</code></pre>
+<p>当使用类别向现有类添加计算属性时，不能覆盖<code>keyPathsForValuesAffectingValueForKey:</code>方法。在这种情况下，实现一个匹配的<code>keyPathsForValuesAffecting&lt;Key&gt;</code>类方法是最好的选择。</p>
+<p><strong>注意</strong>：你不能通过实现<code>keyPathsForValuesAffectingValueForKey:</code>来建立对多关系的依赖。相反，您必须观察<code>to-many</code>集合中每个对象的适当属性，并通过自己更新依赖键来响应它们值的更改。</p>
+<h4 id="对多关系">对多关系</h4>
+<p><code>keyPathsForValuesAffectingValueForKey:</code>方法不支持包含对多关系的<code>key-paths</code>。<br>
+比如有一个<code>Department</code>对象，该对象与<code>Employee</code>之间有一个对多关系(<code>employees</code>)，而<code>Employee</code>具有一个<code>salary</code>属性。您可能希望<code>Department</code>对象具有一个<code>totalSalary</code>属性，该属性依赖于关系中所有<code>employee</code>的工资。此时不可以通过<code>keyPathsForValuesAffectingTotalSalary</code>方法返回<code>employees.salary</code>作为<code>key</code>来实现。</p>
+<p>这种情况有两个解决方案：</p>
+<p>一、可以使用<code>KVO</code>将父节点(在本例中为<code>Department</code>)注册为所有子节点(在本例中为<code>Employees</code>)相关属性的观察者。在子对象被添加到关系中或从关系中删除时候，必须添加和删除父对象作为观察者。在<code>observeValueForKeyPath:ofObject:change:context:</code>方法中，你更新依赖值来响应变化，如下面的代码片段所示:</p>
+<pre><code>- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+ 
+    if (context == totalSalaryContext) {
+        [self updateTotalSalary];
+    }
+    else
+    // deal with other observations and/or invoke super...
+}
+ 
+- (void)updateTotalSalary {
+    [self setTotalSalary:[self valueForKeyPath:@&quot;employees.@sum.salary&quot;]];
+}
+ 
+- (void)setTotalSalary:(NSNumber *)newTotalSalary {
+ 
+    if (totalSalary != newTotalSalary) {
+        [self willChangeValueForKey:@&quot;totalSalary&quot;];
+        _totalSalary = newTotalSalary;
+        [self didChangeValueForKey:@&quot;totalSalary&quot;];
+    }
+}
+ 
+- (NSNumber *)totalSalary {
+    return _totalSalary;
+}
+</code></pre>
+<p>二、如果您正在使用<code>Core Data</code>，您可以将父对象注册到应用程序的通知中心，作为其托管对象上下文的观察者。父对象应以类似于<code>key-value</code>观察的方式响应子对象发布的相关更改通知。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#kvo-%E9%94%AE%E5%80%BC%E8%A7%82%E5%AF%9F">KVO - 键值观察</a>
+<ul>
+<li><a href="#%E5%9F%BA%E7%A1%80%E4%BB%8B%E7%BB%8D">基础介绍</a>
+<ul>
+<li><a href="#%E6%B3%A8%E5%86%8C-%E7%A7%BB%E9%99%A4%E6%B3%A8%E5%86%8C-%E6%8E%A5%E6%94%B6%E9%80%9A%E7%9F%A5">注册、移除注册、接收通知</a>
+<ul>
+<li><a href="#nsobjectnskeyvalueobserverregistration">NSObject(NSKeyValueObserverRegistration)</a></li>
+<li><a href="#nsarraynskeyvalueobserverregistration">NSArray(NSKeyValueObserverRegistration)</a></li>
+<li><a href="#nskeyvalueobservingoptions">NSKeyValueObservingOptions</a></li>
+<li><a href="#nskeyvaluechange">NSKeyValueChange</a></li>
+<li><a href="#nskeyvaluesetmutationkind">NSKeyValueSetMutationKind</a></li>
+<li><a href="#nskeyvaluechangekey">NSKeyValueChangeKey</a></li>
+<li><a href="#nsobjectnskeyvalueobservernotification">NSObject(NSKeyValueObserverNotification)</a></li>
+</ul>
+</li>
+<li><a href="#%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5-%E6%89%8B%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">自动更改通知 &amp; 手动更改通知</a>
+<ul>
+<li><a href="#%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">自动更改通知</a></li>
+<li><a href="#%E6%89%8B%E5%8A%A8%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">手动更改通知</a>
+<ul>
+<li><a href="#%E5%A6%82%E6%9E%9C%E5%8D%95%E4%B8%AA%E6%93%8D%E4%BD%9C%E5%AF%BC%E8%87%B4%E5%A4%9A%E4%B8%AA%E9%94%AE%E5%8F%91%E7%94%9F%E6%9B%B4%E6%94%B9%E5%88%99%E5%BF%85%E9%A1%BB%E5%B5%8C%E5%A5%97%E6%9B%B4%E6%94%B9%E9%80%9A%E7%9F%A5">如果单个操作导致多个键发生更改，则必须嵌套更改通知</a></li>
+<li><a href="#%E6%9C%89%E5%BA%8F%E4%B8%94%E5%AF%B9%E5%A4%9A%E5%85%B3%E7%B3%BB">有序且对多关系</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%85%B3%E8%81%94%E5%B1%9E%E6%80%A7">关联属性</a>
+<ul>
+<li><a href="#%E4%B8%80%E5%AF%B9%E4%B8%80%E5%85%B3%E7%B3%BB">一对一关系</a></li>
+<li><a href="#%E5%AF%B9%E5%A4%9A%E5%85%B3%E7%B3%BB">对多关系</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="/nskeyvaluecoding/">
+              <h3 class="post-title">
+                NSKeyValueCoding
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  <div>
+<a href="http://beian.miit.gov.cn/"  target="_blank">苏ICP备15032414号</a>
+<br/>
+<a href="http://www.beian.gov.cn/"  target="_blank"><image src="https://www.beian.gov.cn/img/new/gongan.png"/>苏公网安备32131102000607号</a>
+</div>
+  <a class="rss" href="/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
